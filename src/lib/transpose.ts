@@ -42,11 +42,34 @@ export function transposeChord(chord: string, semitones: number, preferFlats = f
 	return newRoot + quality;
 }
 
+// Chord-above-lyrics format: transpose chord tokens on chord lines only
+const CHORD_NAME_RE =
+	/^(?:N\.C\.|[A-G][#b]?(?:m(?:aj)?7?|maj7?|dim7?|aug|sus[24]?|add\d+|[679]|11|13|m7b5|6\/9)?(?:\/[A-G][#b]?)?)$/;
+
+function isChordToken(s: string): boolean {
+	return CHORD_NAME_RE.test(s);
+}
+
+function isChordLine(line: string): boolean {
+	if (!line.trim()) return false;
+	const tokens = line.trim().split(/\s+/).filter(Boolean);
+	if (tokens.length === 0) return false;
+	const chordCount = tokens.filter(isChordToken).length;
+	return chordCount >= 1 && chordCount / tokens.length >= 0.6;
+}
+
 export function transposeContent(content: string, semitones: number, preferFlats = false): string {
 	if (semitones === 0) return content;
-	return content.replace(/\[([A-G][#b]?(?:[^[\]]*)?)\]/g, (_, chord) => {
-		return `[${transposeChord(chord, semitones, preferFlats)}]`;
-	});
+	return content
+		.split('\n')
+		.map((line) => {
+			if (!isChordLine(line)) return line;
+			// Replace each chord token in the line, preserving spacing
+			return line.replace(/\S+/g, (token) =>
+				isChordToken(token) ? transposeChord(token, semitones, preferFlats) : token
+			);
+		})
+		.join('\n');
 }
 
 export function getTransposedKey(key: string, semitones: number): string {

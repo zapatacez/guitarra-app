@@ -1,15 +1,15 @@
 import { error } from '@sveltejs/kit';
 import { getSong } from '$lib/server/songs';
-import { getChordsMap } from '$lib/server/chords';
-import { extractChords } from '$lib/chord-parser';
+import { getAllChords } from '$lib/server/chords';
 import type { PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async ({ params }) => {
 	const song = getSong(Number(params.id));
 	if (!song) error(404, 'Song not found');
 
-	const chordNames = extractChords(song.content);
-	const chordMap = await getChordsMap(chordNames, 'basic');
+	// Load all basic chords so transposed chord names still get diagrams
+	const chords = await getAllChords('basic');
+	const chordMap = Object.fromEntries(chords.map((c) => [c.name, c]));
 
 	return { song, chordMap };
 };
