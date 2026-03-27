@@ -25,7 +25,7 @@
 		frets
 			.map((fret, i) => {
 				if (fret <= 0) return null;
-				const stringX = MARGIN_LEFT + (STRING_COUNT - 1 - i) * CELL_W;
+				const stringX = MARGIN_LEFT + i * CELL_W;
 				const adjustedFret = fret - (baseFret > 1 ? baseFret - 1 : 0);
 				const cy = MARGIN_TOP + (adjustedFret - 0.5) * CELL_H;
 				return { cx: stringX, cy, finger: fingers[i] ?? 0 };
@@ -86,7 +86,7 @@
 
 	<!-- Open / Muted -->
 	{#each openMuted as indicator, i}
-		{@const x = MARGIN_LEFT + (STRING_COUNT - 1 - i) * CELL_W}
+		{@const x = MARGIN_LEFT + i * CELL_W}
 		{#if indicator === 'o'}
 			<circle cx={x} cy={MARGIN_TOP - NUT_H - 6} r={4} fill="none" stroke="currentColor" stroke-width="1.5" />
 		{:else if indicator === 'x'}
