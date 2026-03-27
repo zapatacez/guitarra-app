@@ -1,7 +1,8 @@
 <script lang="ts">
 	let { bpm: initialBpm = 100, timeSignature = '4/4' }: { bpm?: number; timeSignature?: string } = $props();
 
-	let bpm = $state(initialBpm);
+	let bpm = $state(0);
+	$effect.pre(() => { if (bpm === 0) bpm = initialBpm; });
 	let running = $state(false);
 	let currentBeat = $state(0);
 	let accentBeat = $state(false);

@@ -49,7 +49,7 @@
 		>
 			<p class="text-white font-bold text-base">{chord}</p>
 			<div class="text-zinc-200">
-				<ChordDiagram {chord={chordData}} />
+				<ChordDiagram chord={chordData} />
 			</div>
 			<p class="text-zinc-400 text-xs capitalize">{chordData.difficulty}</p>
 		</div>

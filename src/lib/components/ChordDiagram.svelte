@@ -15,8 +15,6 @@
 	const WIDTH = MARGIN_LEFT + (STRING_COUNT - 1) * CELL_W + 20;
 	const HEIGHT = MARGIN_TOP + FRET_COUNT * CELL_H + 24;
 
-	$derived.by(() => {});
-
 	const fretPos: number[] = $derived(JSON.parse(chord.fretPositions));
 	const fingers: number[] = $derived(JSON.parse(chord.fingers));
 	const openMuted: string[] = $derived(JSON.parse(chord.openMuted));

@@ -12,7 +12,7 @@
 <div class="space-y-4">
 	<div class="flex items-center justify-between">
 		<h1 class="text-xl font-bold text-zinc-100">Edit Song</h1>
-		<form method="POST" action="?/delete" onsubmit="return confirm('Delete this song?')">
+		<form method="POST" action="?/delete" onsubmit={() => confirm('Delete this song?')}>
 			<button type="submit" class="text-red-400 hover:text-red-300 text-sm transition-colors">
 				Delete
 			</button>

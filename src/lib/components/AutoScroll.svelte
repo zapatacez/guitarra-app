@@ -1,7 +1,7 @@
 <script lang="ts">
 	let { songId }: { songId: number } = $props();
 
-	const SPEED_KEY = `autoscroll_speed_${songId}`;
+	const SPEED_KEY = $derived(`autoscroll_speed_${songId}`);
 
 	let running = $state(false);
 	let speed = $state(Number(typeof localStorage !== 'undefined' ? (localStorage.getItem(SPEED_KEY) ?? '40') : '40'));
