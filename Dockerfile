@@ -1,12 +1,17 @@
-FROM oven/bun:1-alpine AS builder
+FROM node:20-alpine AS builder
 WORKDIR /app
-COPY package.json bun.lock* ./
-RUN bun install
-COPY . .
-RUN bun run build
 
-FROM oven/bun:1-alpine
+# Build tools needed for better-sqlite3 native compilation
+RUN apk add --no-cache python3 make g++
+
+COPY package*.json ./
+RUN npm ci
+COPY . .
+RUN npm run build
+
+FROM node:20-alpine
 WORKDIR /app
+
 COPY --from=builder /app/build ./build
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
@@ -19,4 +24,4 @@ ENV DATABASE_URL=/data/guitarra.db
 ENV PORT=3000
 EXPOSE 3000
 
-CMD ["bun", "build/index.js"]
+CMD ["node", "build/index.js"]

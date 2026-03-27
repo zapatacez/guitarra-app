@@ -7,7 +7,6 @@ import * as schema from './schema';
 
 const DB_PATH = process.env.DATABASE_URL || './guitarra.db';
 
-// Ensure the directory exists
 const dir = dirname(DB_PATH);
 if (dir && dir !== '.' && !existsSync(dir)) {
 	mkdirSync(dir, { recursive: true });
@@ -19,5 +18,4 @@ sqlite.pragma('foreign_keys = ON');
 
 export const db = drizzle(sqlite, { schema });
 
-// Run migrations on startup
 migrate(db, { migrationsFolder: './drizzle' });
