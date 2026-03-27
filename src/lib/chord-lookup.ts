@@ -1,5 +1,6 @@
 // Wraps @tombatossals/chords-db to resolve any chord name to a position object
 // that our ChordDiagram component can render.
+import guitarDb from '@tombatossals/chords-db/lib/guitar.json';
 
 // Database key names use "Csharp"/"Fsharp" instead of "C#"/"F#"
 const KEY_MAP: Record<string, string> = {
@@ -46,11 +47,17 @@ const SUFFIX_MAP: Record<string, string> = {
 };
 
 export interface ChordPosition {
-	frets: number[];       // 6 values, -1=muted, 0=open
-	fingers: number[];     // 6 values, 0=open
+	frets: number[];
+	fingers: number[];
 	baseFret: number;
-	barres: number[];      // fret numbers that are barred across all strings
+	barres: number[];
 }
+
+type GuitarDb = {
+	chords: Record<string, Array<{ suffix: string; positions: ChordPosition[] }>>;
+};
+
+const db = guitarDb as unknown as GuitarDb;
 
 function parseChordName(name: string): { root: string; suffix: string } | null {
 	if (name === 'N.C.') return null;
@@ -60,11 +67,6 @@ function parseChordName(name: string): { root: string; suffix: string } | null {
 }
 
 export function lookupChord(chordName: string): ChordPosition | null {
-	// eslint-disable-next-line @typescript-eslint/no-require-imports
-	const db = require('@tombatossals/chords-db/lib/guitar.json') as {
-		chords: Record<string, Array<{ suffix: string; positions: ChordPosition[] }>>;
-	};
-
 	const parsed = parseChordName(chordName);
 	if (!parsed) return null;
 
@@ -78,19 +80,18 @@ export function lookupChord(chordName: string): ChordPosition | null {
 	if (dbSuffix) {
 		const entry = chordGroup.find((c) => c.suffix === dbSuffix);
 		if (entry?.positions.length) {
-			// Prefer open position (baseFret === 1) when available
 			const open = entry.positions.find((p) => p.baseFret === 1);
 			return open ?? entry.positions[0];
 		}
 	}
 
-	// Fallback: try base chord without extensions (e.g. B7add11 → B7, then B)
+	// Fallback: strip extensions one by one
 	const baseVariants = [
-		parsed.suffix.replace(/add\d+/, ''),   // strip add9/add11
-		parsed.suffix.replace(/b\d+/, ''),      // strip b5/b9
-		parsed.suffix.replace(/sus[24]?/, ''),  // strip sus
-		parsed.suffix.match(/^m/)?.[0] ?? '',   // just 'm'
-		''                                       // major
+		parsed.suffix.replace(/add\d+/, ''),
+		parsed.suffix.replace(/b\d+/, ''),
+		parsed.suffix.replace(/sus[24]?/, ''),
+		parsed.suffix.match(/^m/)?.[0] ?? '',
+		''
 	];
 
 	for (const variant of baseVariants) {
