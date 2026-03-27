@@ -33,7 +33,7 @@
 					{#if token.type === 'chord'}
 						<ChordToken
 							chord={token.value}
-							chordData={chordMap[token.value] ?? null}
+							{chordMap}
 						/>
 					{:else}
 						<!-- Preserve spaces using a span with white-space:pre -->

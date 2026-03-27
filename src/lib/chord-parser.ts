@@ -1,6 +1,8 @@
-// Single chord name — no brackets, matches Em, B7, Am6, B7add11, C/G, N.C., etc.
+// Single chord name — no brackets.
+// Matches: Em, B7, Am6, B7add11, Gmaj7, C/G, A#7, Bb, N.C., etc.
+// Pattern: root + accidental? + (minor/maj/dim/aug/sus)? + number? + add? + slash?
 const CHORD_NAME_RE =
-	/^(?:N\.C\.|[A-G][#b]?(?:m(?:aj)?7?|maj7?|dim7?|aug|sus[24]?|add\d+|[679]|11|13|m7b5|6\/9)?(?:\/[A-G][#b]?)?)$/;
+	/^(?:N\.C\.|[A-G][#b]?(?:(?:m(?:in|aj(?:or)?)?|dim|aug|sus[24]?)?(?:\d+)?(?:add\d+)?(?:b\d+)?(?:sus[24]?)?)?(?:\/[A-G][#b]?)?)$/;
 
 export function isChordName(s: string): boolean {
 	return CHORD_NAME_RE.test(s);
