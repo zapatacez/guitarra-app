@@ -1,17 +1,14 @@
 <script lang="ts">
 	import { parseSong } from '$lib/chord-parser';
 	import { transposeContent } from '$lib/transpose';
-	import type { ChordEntry } from '$lib/server/schema';
 	import ChordToken from './ChordToken.svelte';
 
 	let {
 		content,
-		transposeOffset = 0,
-		chordMap = {}
+		transposeOffset = 0
 	}: {
 		content: string;
 		transposeOffset?: number;
-		chordMap?: Record<string, ChordEntry>;
 	} = $props();
 
 	const transposedContent = $derived(transposeContent(content, transposeOffset));
@@ -31,10 +28,7 @@
 			<div class="chord-line flex flex-wrap items-baseline leading-5 min-h-[1.4rem]">
 				{#each line.tokens as token}
 					{#if token.type === 'chord'}
-						<ChordToken
-							chord={token.value}
-							{chordMap}
-						/>
+						<ChordToken chord={token.value} />
 					{:else}
 						<!-- Preserve spaces using a span with white-space:pre -->
 						<span class="whitespace-pre text-transparent select-none">{token.value}</span>

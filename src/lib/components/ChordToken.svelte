@@ -1,41 +1,10 @@
 <script lang="ts">
-	import type { ChordEntry } from '$lib/server/schema';
+	import { lookupChord } from '$lib/chord-lookup';
 	import ChordDiagram from './ChordDiagram.svelte';
 
-	let {
-		chord,
-		chordMap = {}
-	}: {
-		chord: string;
-		chordMap: Record<string, ChordEntry>;
-	} = $props();
+	let { chord }: { chord: string } = $props();
 
-	// Enharmonic equivalents for fallback lookup
-	const ENHARMONIC: Record<string, string> = {
-		'A#': 'Bb', 'C#': 'Db', 'D#': 'Eb', 'F#': 'Gb', 'G#': 'Ab',
-		'Bb': 'A#', 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#'
-	};
-
-	function resolveChordData(name: string): ChordEntry | null {
-		if (chordMap[name]) return chordMap[name];
-
-		// Try enharmonic root: e.g. A#7 → Bb7
-		const root = name.length > 1 && (name[1] === '#' || name[1] === 'b')
-			? name.slice(0, 2)
-			: name[0];
-		const quality = name.slice(root.length);
-		const enh = ENHARMONIC[root];
-		if (enh && chordMap[enh + quality]) return chordMap[enh + quality];
-
-		// Try base chord without extensions: Am7 → Am, Gmaj7 → G
-		const base = name.match(/^[A-G][#b]?m?/)?.[0];
-		if (base && base !== name && chordMap[base]) return chordMap[base];
-
-		return null;
-	}
-
-	const chordData = $derived(resolveChordData(chord));
-
+	const position = $derived(lookupChord(chord));
 	let open = $state(false);
 
 	function toggle() { open = !open; }
@@ -65,11 +34,10 @@
 			class="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 bg-zinc-800 border border-zinc-600 rounded-lg p-3 shadow-xl flex flex-col items-center gap-1 min-w-[120px]"
 		>
 			<p class="text-white font-bold text-base">{chord}</p>
-			{#if chordData}
+			{#if position}
 				<div class="text-zinc-200">
-					<ChordDiagram chord={chordData} />
+					<ChordDiagram {position} />
 				</div>
-				<p class="text-zinc-400 text-xs capitalize">{chordData.difficulty}</p>
 			{:else}
 				<p class="text-zinc-500 text-xs">No diagram available</p>
 			{/if}

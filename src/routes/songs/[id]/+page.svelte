@@ -104,7 +104,6 @@
 		<LyricsRenderer
 			content={data.song.content}
 			transposeOffset={transposeOffset}
-			chordMap={data.chordMap}
 		/>
 	{:else}
 		<p class="text-zinc-500 text-sm">No lyrics yet. <a href="/songs/{data.song.id}/edit" class="text-amber-400 hover:text-amber-300">Add them →</a></p>
