@@ -4,7 +4,7 @@
 	const SPEED_KEY = $derived(`autoscroll_speed_${songId}`);
 
 	let running = $state(false);
-	let speed = $state(Number(typeof localStorage !== 'undefined' ? (localStorage.getItem(SPEED_KEY) ?? '40') : '40'));
+	let speed = $state(Number(typeof localStorage !== 'undefined' ? (localStorage.getItem(SPEED_KEY) ?? '15') : '15'));
 	let rafId: number | null = null;
 	let lastTime: number | null = null;
 	let userScrolling = false;
