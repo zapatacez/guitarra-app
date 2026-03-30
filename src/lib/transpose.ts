@@ -63,8 +63,17 @@ export function transposeContent(content: string, semitones: number, preferFlats
 	return content
 		.split('\n')
 		.map((line) => {
+			// Inline chord format: [G]word — not a whole-line section header like [Verse 1]
+			if (/\[[A-G][^\]]*\]/.test(line) && !/^\[.+\]$/.test(line.trim())) {
+				return line.replace(/\[([^\]]+)\]/g, (match, chord) => {
+					if (isChordToken(chord)) {
+						return `[${transposeChord(chord, semitones, preferFlats)}]`;
+					}
+					return match;
+				});
+			}
+			// Chord-above-lyrics format
 			if (!isChordLine(line)) return line;
-			// Replace each chord token in the line, preserving spacing
 			return line.replace(/\S+/g, (token) =>
 				isChordToken(token) ? transposeChord(token, semitones, preferFlats) : token
 			);

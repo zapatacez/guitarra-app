@@ -20,6 +20,15 @@ function isSectionHeader(line: string): boolean {
 	return /^\[.+\]$/.test(line.trim());
 }
 
+// Detects inline chord format: [G]word [Em]word
+// The bracket must contain a valid chord name, and the line must not be a pure section header.
+function isInlineChordLine(line: string): boolean {
+	if (isSectionHeader(line)) return false;
+	const matches = line.match(/\[([^\]]+)\]/g);
+	if (!matches) return false;
+	return matches.some((m) => CHORD_NAME_RE.test(m.slice(1, -1)));
+}
+
 // ── Token types ──────────────────────────────────────────────────────────────
 
 export type ChordLineToken =
@@ -27,9 +36,12 @@ export type ChordLineToken =
 	| { type: 'space'; value: string }
 	| { type: 'text'; value: string };
 
+export type InlineSegment = { chord: string | null; lyric: string };
+
 export type ParsedLine =
 	| { lineType: 'section'; value: string }
 	| { lineType: 'chords'; tokens: ChordLineToken[] }
+	| { lineType: 'inline-chords'; segments: InlineSegment[] }
 	| { lineType: 'lyrics'; value: string }
 	| { lineType: 'empty' };
 
@@ -51,10 +63,26 @@ function parseChordLine(line: string): ChordLineToken[] {
 	return tokens;
 }
 
+// Parses [G]Almost [Em]Heaven into segments: [{chord:'G', lyric:'Almost '}, {chord:'Em', lyric:'Heaven'}]
+function parseInlineChordLine(line: string): InlineSegment[] {
+	const segments: InlineSegment[] = [];
+	const firstBracket = line.indexOf('[');
+	if (firstBracket > 0) {
+		segments.push({ chord: null, lyric: line.slice(0, firstBracket) });
+	}
+	const re = /\[([^\]]+)\]([^[]*)/g;
+	let match: RegExpExecArray | null;
+	while ((match = re.exec(line)) !== null) {
+		segments.push({ chord: match[1], lyric: match[2] });
+	}
+	return segments;
+}
+
 export function parseSong(content: string): ParsedLine[] {
 	return content.split('\n').map((line): ParsedLine => {
 		if (!line.trim()) return { lineType: 'empty' };
 		if (isSectionHeader(line)) return { lineType: 'section', value: line.trim().slice(1, -1) };
+		if (isInlineChordLine(line)) return { lineType: 'inline-chords', segments: parseInlineChordLine(line) };
 		if (isChordLine(line)) return { lineType: 'chords', tokens: parseChordLine(line) };
 		return { lineType: 'lyrics', value: line };
 	});
@@ -69,6 +97,14 @@ export function extractChords(content: string): string[] {
 				.split(/\s+/)
 				.filter(isChordName)
 				.forEach((c) => chords.add(c));
+		} else if (isInlineChordLine(line)) {
+			const matches = line.match(/\[([^\]]+)\]/g);
+			if (matches) {
+				matches.forEach((m) => {
+					const chord = m.slice(1, -1);
+					if (CHORD_NAME_RE.test(chord)) chords.add(chord);
+				});
+			}
 		}
 	}
 	return Array.from(chords);

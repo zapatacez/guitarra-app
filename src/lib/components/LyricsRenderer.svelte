@@ -36,6 +36,20 @@
 				{/each}
 			</div>
 
+		{:else if line.lineType === 'inline-chords'}
+			<div class="flex flex-wrap items-end mb-0.5">
+				{#each line.segments as seg}
+					<span class="inline-flex flex-col items-start">
+						<span class="min-h-[1.4rem] flex items-center">
+							{#if seg.chord}
+								<ChordToken chord={seg.chord} />
+							{/if}
+						</span>
+						<span class="text-zinc-200 whitespace-pre leading-6">{seg.lyric}</span>
+					</span>
+				{/each}
+			</div>
+
 		{:else if line.lineType === 'lyrics'}
 			<div class="lyrics-line text-zinc-200 whitespace-pre leading-6">{line.value}</div>
 
