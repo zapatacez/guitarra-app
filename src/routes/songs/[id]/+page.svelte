@@ -14,6 +14,31 @@
 	function togglePanel(panel: typeof activePanel) {
 		activePanel = activePanel === panel ? null : panel;
 	}
+
+	// Keep screen awake while viewing a song
+	$effect(() => {
+		let wakeLock: WakeLockSentinel | null = null;
+
+		async function acquire() {
+			try {
+				if ('wakeLock' in navigator) {
+					wakeLock = await navigator.wakeLock.request('screen');
+				}
+			} catch {}
+		}
+
+		function onVisibilityChange() {
+			if (document.visibilityState === 'visible') acquire();
+		}
+
+		acquire();
+		document.addEventListener('visibilitychange', onVisibilityChange);
+
+		return () => {
+			wakeLock?.release();
+			document.removeEventListener('visibilitychange', onVisibilityChange);
+		};
+	});
 </script>
 
 <svelte:head>
