@@ -15,7 +15,7 @@
 	const lines = $derived(parseSong(transposedContent));
 </script>
 
-<div class="lyrics-renderer font-mono text-sm leading-6">
+<div class="lyrics-renderer font-mono text-sm leading-6 overflow-x-auto">
 	{#each lines as line}
 		{#if line.lineType === 'section'}
 			<div class="mt-5 mb-1">
