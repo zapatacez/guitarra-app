@@ -4,7 +4,7 @@
 	const SPEED_KEY = $derived(`autoscroll_speed_${songId}`);
 
 	let running = $state(false);
-	let speed = $state(Number(typeof localStorage !== 'undefined' ? (localStorage.getItem(SPEED_KEY) ?? '15') : '15'));
+	let speed = $state(Number(typeof localStorage !== 'undefined' ? (localStorage.getItem(SPEED_KEY) ?? '8') : '8'));
 	let rafId: number | null = null;
 	let lastTime: number | null = null;
 	let userScrolling = false;
@@ -69,21 +69,22 @@
 
 	<div class="flex items-center gap-2">
 		<button
-			onclick={() => { speed = Math.max(5, speed - 10); saveSpeed(); }}
+			onclick={() => { speed = Math.max(2, speed - 2); saveSpeed(); }}
 			class="w-7 h-7 bg-zinc-700 hover:bg-zinc-600 rounded text-sm font-bold transition-colors"
 			title="Slower"
 		>−</button>
 		<input
 			type="range"
-			min="5"
-			max="200"
+			min="2"
+			max="60"
+			step="1"
 			bind:value={speed}
 			oninput={saveSpeed}
 			class="w-20 accent-amber-500"
 			title="Scroll speed"
 		/>
 		<button
-			onclick={() => { speed = Math.min(200, speed + 10); saveSpeed(); }}
+			onclick={() => { speed = Math.min(60, speed + 2); saveSpeed(); }}
 			class="w-7 h-7 bg-zinc-700 hover:bg-zinc-600 rounded text-sm font-bold transition-colors"
 			title="Faster"
 		>+</button>
