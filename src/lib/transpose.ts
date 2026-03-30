@@ -80,3 +80,59 @@ export function getTransposedKey(key: string, semitones: number): string {
 export function shouldPreferFlats(key: string): boolean {
 	return FLAT_KEYS.has(key);
 }
+
+// ── Key detection ─────────────────────────────────────────────────────────────
+
+// Matches chord root notes (strips quality/modifiers)
+const ROOT_RE = /^[A-G][#b]?/;
+
+// All 12 keys in guitar-friendly notation (matches SongForm KEYS array)
+const KEY_CANDIDATES = [
+	{ name: 'C',  semitone: 0  },
+	{ name: 'C#', semitone: 1  },
+	{ name: 'D',  semitone: 2  },
+	{ name: 'Eb', semitone: 3  },
+	{ name: 'E',  semitone: 4  },
+	{ name: 'F',  semitone: 5  },
+	{ name: 'F#', semitone: 6  },
+	{ name: 'G',  semitone: 7  },
+	{ name: 'Ab', semitone: 8  },
+	{ name: 'A',  semitone: 9  },
+	{ name: 'Bb', semitone: 10 },
+	{ name: 'B',  semitone: 11 },
+];
+
+// Semitone intervals of a major scale: W W H W W W H
+const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
+
+export function detectKey(content: string): string {
+	// Extract all chord root semitones from chord lines
+	const rootSemitones: number[] = [];
+	for (const line of content.split('\n')) {
+		if (!isChordLine(line)) continue;
+		for (const token of line.trim().split(/\s+/)) {
+			const match = token.match(ROOT_RE);
+			if (match) {
+				const idx = noteIndex(match[0]);
+				if (idx !== -1) rootSemitones.push(idx);
+			}
+		}
+	}
+
+	if (rootSemitones.length === 0) return 'C';
+
+	// Score each candidate key by how many chord roots fall on a diatonic note
+	let bestKey = 'C';
+	let bestScore = -1;
+
+	for (const { name, semitone } of KEY_CANDIDATES) {
+		const diatonic = new Set(MAJOR_INTERVALS.map((i) => (semitone + i) % 12));
+		const score = rootSemitones.filter((s) => diatonic.has(s)).length;
+		if (score > bestScore) {
+			bestScore = score;
+			bestKey = name;
+		}
+	}
+
+	return bestKey;
+}

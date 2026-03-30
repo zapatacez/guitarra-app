@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="96" fill="#18181b"/>
+
+  <!-- Guitar neck -->
+  <rect x="232" y="40" width="48" height="200" rx="12" fill="#d97706"/>
+
+  <!-- Headstock -->
+  <rect x="216" y="28" width="80" height="48" rx="10" fill="#b45309"/>
+  <!-- Tuning pegs -->
+  <circle cx="210" cy="44" r="8" fill="#78716c"/>
+  <circle cx="210" cy="64" r="8" fill="#78716c"/>
+  <circle cx="302" cy="44" r="8" fill="#78716c"/>
+  <circle cx="302" cy="64" r="8" fill="#78716c"/>
+
+  <!-- Fret lines -->
+  <rect x="232" y="100" width="48" height="3" rx="1" fill="#92400e"/>
+  <rect x="232" y="140" width="48" height="3" rx="1" fill="#92400e"/>
+  <rect x="232" y="180" width="48" height="3" rx="1" fill="#92400e"/>
+
+  <!-- Guitar body - lower bout -->
+  <ellipse cx="256" cy="360" rx="130" ry="110" fill="#f59e0b"/>
+  <!-- Guitar body - upper bout -->
+  <ellipse cx="256" cy="255" rx="100" ry="85" fill="#f59e0b"/>
+  <!-- Waist cutout left -->
+  <ellipse cx="168" cy="305" rx="40" ry="28" fill="#18181b"/>
+  <!-- Waist cutout right -->
+  <ellipse cx="344" cy="305" rx="40" ry="28" fill="#18181b"/>
+
+  <!-- Body shading -->
+  <ellipse cx="256" cy="355" rx="125" ry="105" fill="#fbbf24"/>
+  <ellipse cx="256" cy="252" rx="96" ry="82" fill="#fbbf24"/>
+  <ellipse cx="168" cy="305" rx="37" ry="25" fill="#18181b"/>
+  <ellipse cx="344" cy="305" rx="37" ry="25" fill="#18181b"/>
+
+  <!-- Sound hole -->
+  <circle cx="256" cy="335" r="42" fill="#18181b"/>
+  <circle cx="256" cy="335" r="38" fill="#92400e" opacity="0.6"/>
+  <circle cx="256" cy="335" r="32" fill="#18181b"/>
+
+  <!-- Bridge -->
+  <rect x="220" y="400" width="72" height="14" rx="4" fill="#92400e"/>
+
+  <!-- Strings -->
+  <line x1="244" y1="60" x2="238" y2="415" stroke="#e5e7eb" stroke-width="1.5" opacity="0.8"/>
+  <line x1="250" y1="60" x2="248" y2="415" stroke="#e5e7eb" stroke-width="1.5" opacity="0.8"/>
+  <line x1="256" y1="60" x2="256" y2="415" stroke="#e5e7eb" stroke-width="1.5" opacity="0.8"/>
+  <line x1="262" y1="60" x2="264" y2="415" stroke="#e5e7eb" stroke-width="1.5" opacity="0.8"/>
+  <line x1="268" y1="60" x2="274" y2="415" stroke="#e5e7eb" stroke-width="1.5" opacity="0.8"/>
+</svg>
