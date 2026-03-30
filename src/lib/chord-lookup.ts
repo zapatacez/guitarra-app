@@ -80,8 +80,7 @@ export function lookupChord(chordName: string): ChordPosition | null {
 	if (dbSuffix) {
 		const entry = chordGroup.find((c) => c.suffix === dbSuffix);
 		if (entry?.positions.length) {
-			const open = entry.positions.find((p) => p.baseFret === 1);
-			return open ?? entry.positions[0];
+			return entry.positions[0];
 		}
 	}
 
@@ -100,8 +99,7 @@ export function lookupChord(chordName: string): ChordPosition | null {
 		if (!fallbackSuffix) continue;
 		const entry = chordGroup.find((c) => c.suffix === fallbackSuffix);
 		if (entry?.positions.length) {
-			const open = entry.positions.find((p) => p.baseFret === 1);
-			return open ?? entry.positions[0];
+			return entry.positions[0];
 		}
 	}
 
