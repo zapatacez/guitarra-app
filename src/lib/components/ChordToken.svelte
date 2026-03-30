@@ -31,7 +31,7 @@
 		<div
 			role="dialog"
 			aria-label="{chord} chord diagram"
-			class="absolute z-50 bottom-full mb-2 left-1/2 -translate-x-1/2 bg-zinc-800 border border-zinc-600 rounded-lg p-3 shadow-xl flex flex-col items-center gap-1 min-w-[120px]"
+			class="fixed z-50 top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-zinc-800 border border-zinc-600 rounded-lg p-3 shadow-xl flex flex-col items-center gap-1 min-w-[120px]"
 		>
 			<p class="text-white font-bold text-base">{chord}</p>
 			{#if position}
