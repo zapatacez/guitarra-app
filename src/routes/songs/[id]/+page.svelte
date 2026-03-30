@@ -11,6 +11,10 @@
 	let showMetronome = $state(false);
 	let activePanel = $state<'transpose' | 'scroll' | 'metronome' | null>(null);
 
+	// Capo transposes the displayed shapes down relative to the sounding key.
+	// e.g. key=A, capo=2 → show G shapes (A − 2), matching UG's behaviour.
+	const effectiveTranspose = $derived(transposeOffset - data.song.capo);
+
 	function togglePanel(panel: typeof activePanel) {
 		activePanel = activePanel === panel ? null : panel;
 	}
@@ -128,7 +132,7 @@
 	{#if data.song.content}
 		<LyricsRenderer
 			content={data.song.content}
-			transposeOffset={transposeOffset}
+			transposeOffset={effectiveTranspose}
 		/>
 	{:else}
 		<p class="text-zinc-500 text-sm">No lyrics yet. <a href="/songs/{data.song.id}/edit" class="text-amber-400 hover:text-amber-300">Add them →</a></p>
