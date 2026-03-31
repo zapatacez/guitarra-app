@@ -8,12 +8,13 @@
 	let { data }: { data: PageData } = $props();
 
 	let transposeOffset = $state(0);
+	let capo = $state(data.song.capo);
 	let showMetronome = $state(false);
-	let activePanel = $state<'transpose' | 'scroll' | 'metronome' | null>(null);
+	let activePanel = $state<'transpose' | 'capo' | 'scroll' | 'metronome' | null>(null);
 
 	// Capo transposes the displayed shapes down relative to the sounding key.
 	// e.g. key=A, capo=2 → show G shapes (A − 2), matching UG's behaviour.
-	const effectiveTranspose = $derived(transposeOffset - data.song.capo);
+	const effectiveTranspose = $derived(transposeOffset - capo);
 
 	function togglePanel(panel: typeof activePanel) {
 		activePanel = activePanel === panel ? null : panel;
@@ -62,9 +63,9 @@
 					Key: {data.song.key}
 				</span>
 			{/if}
-			{#if data.song.capo > 0}
+			{#if capo > 0}
 				<span class="text-xs bg-zinc-800 border border-zinc-700 rounded px-2 py-0.5 text-zinc-300">
-					Capo {data.song.capo}
+					Capo {capo}
 				</span>
 			{/if}
 			{#if data.song.timeSignature}
@@ -91,6 +92,13 @@
 		>♯♭ Transpose</button>
 
 		<button
+			onclick={() => togglePanel('capo')}
+			class="px-3 py-1.5 rounded-lg text-sm transition-colors {activePanel === 'capo'
+				? 'bg-amber-500 text-black font-semibold'
+				: 'bg-zinc-800 text-zinc-300 hover:bg-zinc-700'}"
+		>𝄌 Capo {capo > 0 ? capo : 'off'}</button>
+
+		<button
 			onclick={() => togglePanel('scroll')}
 			class="px-3 py-1.5 rounded-lg text-sm transition-colors {activePanel === 'scroll'
 				? 'bg-amber-500 text-black font-semibold'
@@ -111,6 +119,31 @@
 				originalKey={data.song.key}
 				bind:offset={transposeOffset}
 			/>
+		</div>
+	{/if}
+
+	{#if activePanel === 'capo'}
+		<div class="mt-2 pb-1 flex items-center gap-2">
+			<button
+				onclick={() => (capo = Math.max(0, capo - 1))}
+				class="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-bold text-zinc-200 transition-colors disabled:opacity-40"
+				disabled={capo <= 0}
+			>−</button>
+			<div class="text-center min-w-[72px]">
+				<span class="text-amber-400 font-bold text-lg">{capo === 0 ? 'No capo' : `Capo ${capo}`}</span>
+			</div>
+			<button
+				onclick={() => (capo = Math.min(11, capo + 1))}
+				class="w-8 h-8 bg-zinc-700 hover:bg-zinc-600 rounded-lg font-bold text-zinc-200 transition-colors disabled:opacity-40"
+				disabled={capo >= 11}
+			>+</button>
+			{#if capo !== data.song.capo}
+				<button
+					onclick={() => (capo = data.song.capo)}
+					class="text-xs text-zinc-500 hover:text-zinc-300 transition-colors px-1"
+					title="Reset to saved capo"
+				>↺</button>
+			{/if}
 		</div>
 	{/if}
 
