@@ -12,9 +12,11 @@
 	let showMetronome = $state(false);
 	let activePanel = $state<'transpose' | 'capo' | 'scroll' | 'metronome' | null>(null);
 
-	// Capo transposes the displayed shapes down relative to the sounding key.
-	// e.g. key=A, capo=2 → show G shapes (A − 2), matching UG's behaviour.
-	const effectiveTranspose = $derived(transposeOffset - capo);
+	// Transpose relative to the saved capo position.
+	// Stored chords are the shapes for data.song.capo.
+	// Changing capo shifts the display by (savedCapo − currentCapo).
+	// e.g. saved capo=2 (G shapes), view with capo=0 → G+2 = A (sounding).
+	const effectiveTranspose = $derived(transposeOffset + data.song.capo - capo);
 
 	function togglePanel(panel: typeof activePanel) {
 		activePanel = activePanel === panel ? null : panel;
