@@ -22,7 +22,9 @@
 		"svelte-check": "^4.4.2",
 		"tailwindcss": "^4.2.2",
 		"typescript": "^5.9.3",
-		"vite": "^7.3.1"
+		"vite": "^7.3.1",
+		"vite-plugin-pwa": "^1.2.0",
+		"workbox-window": "^7.4.0"
 	},
 	"dependencies": {
 		"@tombatossals/chords-db": "^0.5.1",
