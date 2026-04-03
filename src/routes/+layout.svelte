@@ -1,8 +1,23 @@
 <script lang="ts">
 	import '../app.css';
 	import { page } from '$app/stores';
+	import { onMount } from 'svelte';
 
 	let { children } = $props();
+
+	let offline = $state(false);
+
+	onMount(() => {
+		offline = !navigator.onLine;
+		const setOnline = () => (offline = false);
+		const setOffline = () => (offline = true);
+		window.addEventListener('online', setOnline);
+		window.addEventListener('offline', setOffline);
+		return () => {
+			window.removeEventListener('online', setOnline);
+			window.removeEventListener('offline', setOffline);
+		};
+	});
 </script>
 
 <svelte:head>
@@ -15,10 +30,15 @@
 			<a href="/" class="text-amber-400 font-bold text-lg tracking-tight">
 				🎸 Guitarra
 			</a>
-			<a
-				href="/songs/new"
-				class="bg-amber-500 hover:bg-amber-400 text-black font-semibold px-3 py-1.5 rounded-md transition-colors text-sm"
-			>+ New Song</a>
+			<div class="flex items-center gap-2">
+				{#if offline}
+					<span class="text-xs text-zinc-400 bg-zinc-800 px-2 py-1 rounded-full">Offline</span>
+				{/if}
+				<a
+					href="/songs/new"
+					class="bg-amber-500 hover:bg-amber-400 text-black font-semibold px-3 py-1.5 rounded-md transition-colors text-sm"
+				>+ New Song</a>
+			</div>
 		</nav>
 	</header>
 
