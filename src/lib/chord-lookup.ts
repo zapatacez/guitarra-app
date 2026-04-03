@@ -1,6 +1,7 @@
 // Wraps @tombatossals/chords-db to resolve any chord name to a position object
 // that our ChordDiagram component can render.
 import guitarDb from '@tombatossals/chords-db/lib/guitar.json';
+import { Chord } from 'tonal';
 
 // Database key names use "Csharp"/"Fsharp" instead of "C#"/"F#"
 const KEY_MAP: Record<string, string> = {
@@ -67,35 +68,49 @@ function parseChordName(name: string): { root: string; suffix: string } | null {
 }
 
 export function lookupChord(chordName: string): ChordPosition | null {
-	// Strip slash bass note: D7(9)/A → D7(9) for lookup purposes
+	// Strip slash bass note: D7(9)/A → D7(9)
 	const name = chordName.replace(/\/[A-G][#b]?$/, '');
+
+	// ── Primary path: tonal recognises the chord (standard notation) ──────────
+	const tonalChord = Chord.get(name);
+	if (!tonalChord.empty && tonalChord.tonic) {
+		const dbKey = KEY_MAP[tonalChord.tonic];
+		if (dbKey && db.chords[dbKey]) {
+			const group = db.chords[dbKey];
+			for (const alias of tonalChord.aliases) {
+				const dbSuffix = SUFFIX_MAP[alias];
+				if (dbSuffix) {
+					const entry = group.find((c) => c.suffix === dbSuffix);
+					if (entry?.positions.length) return entry.positions[0];
+				}
+			}
+		}
+	}
+
+	// ── Fallback: manual parsing for non-standard notation (C7(9), F7M…) ─────
 	const parsed = parseChordName(name);
 	if (!parsed) return null;
 
 	const dbKey = KEY_MAP[parsed.root];
 	if (!dbKey || !db.chords[dbKey]) return null;
 
-	const chordGroup = db.chords[dbKey];
+	const group = db.chords[dbKey];
 
 	function find(suffix: string): ChordPosition | null {
 		const dbSuffix = SUFFIX_MAP[suffix];
 		if (!dbSuffix) return null;
-		const entry = chordGroup.find((c) => c.suffix === dbSuffix);
+		const entry = group.find((c) => c.suffix === dbSuffix);
 		return entry?.positions[0] ?? null;
 	}
 
 	const raw = parsed.suffix;
-	// Normalize M-major suffix: 7M → maj7, M7 already in SUFFIX_MAP
 	const normalizeM = (s: string) => s.replace(/(\d+)M$/, 'maj$1');
-	// Strip parenthesized extensions: C7(9) → C7, Bm7(b5) → Bm7
 	const noParens = raw.replace(/\([^)]*\)/g, '');
-	// Unwrap flat extensions: (b5) → b5 (for m7b5 lookup)
-	const unwrappedFlat = raw.replace(/\(b(\d+)\)/g, 'b$1');
 
 	const variants = [
 		raw,
 		normalizeM(raw),
-		unwrappedFlat,
+		raw.replace(/\(b(\d+)\)/g, 'b$1'),   // (b5) → b5
 		noParens,
 		normalizeM(noParens),
 		noParens.replace(/add\d+/, ''),
