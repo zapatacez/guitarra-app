@@ -67,7 +67,9 @@ function parseChordName(name: string): { root: string; suffix: string } | null {
 }
 
 export function lookupChord(chordName: string): ChordPosition | null {
-	const parsed = parseChordName(chordName);
+	// Strip slash bass note: D7(9)/A → D7(9) for lookup purposes
+	const name = chordName.replace(/\/[A-G][#b]?$/, '');
+	const parsed = parseChordName(name);
 	if (!parsed) return null;
 
 	const dbKey = KEY_MAP[parsed.root];
@@ -75,32 +77,37 @@ export function lookupChord(chordName: string): ChordPosition | null {
 
 	const chordGroup = db.chords[dbKey];
 
-	// Try exact suffix match first
-	const dbSuffix = SUFFIX_MAP[parsed.suffix];
-	if (dbSuffix) {
+	function find(suffix: string): ChordPosition | null {
+		const dbSuffix = SUFFIX_MAP[suffix];
+		if (!dbSuffix) return null;
 		const entry = chordGroup.find((c) => c.suffix === dbSuffix);
-		if (entry?.positions.length) {
-			return entry.positions[0];
-		}
+		return entry?.positions[0] ?? null;
 	}
 
-	// Fallback: strip extensions one by one
-	const baseVariants = [
-		parsed.suffix.replace(/add\d+/, ''),
-		parsed.suffix.replace(/b\d+/, ''),
-		parsed.suffix.replace(/sus[24]?/, ''),
-		parsed.suffix.match(/^m/)?.[0] ?? '',
-		''
-	];
+	const raw = parsed.suffix;
+	// Normalize M-major suffix: 7M → maj7, M7 already in SUFFIX_MAP
+	const normalizeM = (s: string) => s.replace(/(\d+)M$/, 'maj$1');
+	// Strip parenthesized extensions: C7(9) → C7, Bm7(b5) → Bm7
+	const noParens = raw.replace(/\([^)]*\)/g, '');
+	// Unwrap flat extensions: (b5) → b5 (for m7b5 lookup)
+	const unwrappedFlat = raw.replace(/\(b(\d+)\)/g, 'b$1');
 
-	for (const variant of baseVariants) {
-		if (variant === parsed.suffix) continue;
-		const fallbackSuffix = SUFFIX_MAP[variant];
-		if (!fallbackSuffix) continue;
-		const entry = chordGroup.find((c) => c.suffix === fallbackSuffix);
-		if (entry?.positions.length) {
-			return entry.positions[0];
-		}
+	const variants = [
+		raw,
+		normalizeM(raw),
+		unwrappedFlat,
+		noParens,
+		normalizeM(noParens),
+		noParens.replace(/add\d+/, ''),
+		noParens.replace(/b\d+/, ''),
+		raw.startsWith('m') ? noParens.match(/^m\d*/)?.[0] ?? 'm' : null,
+		raw.startsWith('m') ? 'm' : null,
+		'',
+	].filter((v): v is string => v !== null);
+
+	for (const v of variants) {
+		const pos = find(v);
+		if (pos) return pos;
 	}
 
 	return null;

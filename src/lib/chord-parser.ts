@@ -2,7 +2,7 @@
 // Matches: Em, B7, Am6, B7add11, Gmaj7, C/G, A#7, Bb, N.C., etc.
 // Pattern: root + accidental? + (minor/maj/dim/aug/sus)? + number? + add? + slash?
 const CHORD_NAME_RE =
-	/^(?:N\.C\.|[A-G][#b]?(?:(?:m(?:in|aj(?:or)?)?|dim|aug|sus[24]?)?(?:\d+)?(?:add\d+)?(?:b\d+)?(?:sus[24]?)?)?(?:\/[A-G][#b]?)?)$/;
+	/^(?:N\.C\.|[A-G][#b]?(?:(?:m(?:in|aj(?:or)?)?|M|dim7?|aug|sus[24]?)?(?:\d+)?M?(?:\([^)]+\))*(?:add\d+)?(?:b\d+)?(?:sus[24]?)?)?(?:\/[A-G][#b]?)?)$/;
 
 export function isChordName(s: string): boolean {
 	return CHORD_NAME_RE.test(s);
@@ -17,7 +17,11 @@ function isChordLine(line: string): boolean {
 }
 
 function isSectionHeader(line: string): boolean {
-	return /^\[.+\]$/.test(line.trim());
+	const trimmed = line.trim();
+	// Must be exactly [content] — a single bracket pair with nothing outside
+	if (!/^\[[^\]]+\]$/.test(trimmed)) return false;
+	// If the content is a valid chord name, it's an inline chord, not a section header
+	return !CHORD_NAME_RE.test(trimmed.slice(1, -1));
 }
 
 // Detects inline chord format: [G]word [Em]word

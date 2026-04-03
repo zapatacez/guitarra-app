@@ -29,8 +29,8 @@ function parseRoot(chord: string): [string, string] {
 export function transposeChord(chord: string, semitones: number, preferFlats = false): string {
 	if (semitones === 0) return chord;
 
-	// Handle slash chords: G/B
-	const slashIdx = chord.indexOf('/');
+	// Handle slash chords: G/B, D7(9)/A — only split on /[Note] at end of string
+	const slashIdx = chord.search(/\/[A-G][#b]?$/);
 	if (slashIdx !== -1) {
 		const base = chord.slice(0, slashIdx);
 		const bass = chord.slice(slashIdx + 1);
@@ -42,9 +42,8 @@ export function transposeChord(chord: string, semitones: number, preferFlats = f
 	return newRoot + quality;
 }
 
-// Chord-above-lyrics format: transpose chord tokens on chord lines only
 const CHORD_NAME_RE =
-	/^(?:N\.C\.|[A-G][#b]?(?:m(?:aj)?7?|maj7?|dim7?|aug|sus[24]?|add\d+|[679]|11|13|m7b5|6\/9)?(?:\/[A-G][#b]?)?)$/;
+	/^(?:N\.C\.|[A-G][#b]?(?:(?:m(?:aj)?|M|dim7?|aug|sus[24]?)?(?:\d+)?M?(?:\([^)]+\))*(?:add\d+)?(?:b\d+)?)?(?:\/[A-G][#b]?)?)$/;
 
 function isChordToken(s: string): boolean {
 	return CHORD_NAME_RE.test(s);
@@ -63,14 +62,12 @@ export function transposeContent(content: string, semitones: number, preferFlats
 	return content
 		.split('\n')
 		.map((line) => {
-			// Inline chord format: [G]word — not a whole-line section header like [Verse 1]
-			if (/\[[A-G][^\]]*\]/.test(line) && !/^\[.+\]$/.test(line.trim())) {
-				return line.replace(/\[([^\]]+)\]/g, (match, chord) => {
-					if (isChordToken(chord)) {
-						return `[${transposeChord(chord, semitones, preferFlats)}]`;
-					}
-					return match;
-				});
+			// Inline chord format: any line containing [Chord] brackets
+			// Non-chord content like [Verse 1] passes through unchanged (isChordToken returns false)
+			if (/\[[^\]]+\]/.test(line)) {
+				return line.replace(/\[([^\]]+)\]/g, (match, chord) =>
+					isChordToken(chord) ? `[${transposeChord(chord, semitones, preferFlats)}]` : match
+				);
 			}
 			// Chord-above-lyrics format
 			if (!isChordLine(line)) return line;
@@ -115,15 +112,28 @@ const KEY_CANDIDATES = [
 const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11];
 
 export function detectKey(content: string): string {
-	// Extract all chord root semitones from chord lines
 	const rootSemitones: number[] = [];
 	for (const line of content.split('\n')) {
-		if (!isChordLine(line)) continue;
-		for (const token of line.trim().split(/\s+/)) {
-			const match = token.match(ROOT_RE);
-			if (match) {
-				const idx = noteIndex(match[0]);
-				if (idx !== -1) rootSemitones.push(idx);
+		if (isChordLine(line)) {
+			// Chord-above-lyrics format
+			for (const token of line.trim().split(/\s+/)) {
+				const match = token.match(ROOT_RE);
+				if (match) {
+					const idx = noteIndex(match[0]);
+					if (idx !== -1) rootSemitones.push(idx);
+				}
+			}
+		} else if (/\[[^\]]+\]/.test(line)) {
+			// Inline chord format
+			for (const m of line.match(/\[([^\]]+)\]/g) ?? []) {
+				const chord = m.slice(1, -1);
+				if (isChordToken(chord)) {
+					const match = chord.match(ROOT_RE);
+					if (match) {
+						const idx = noteIndex(match[0]);
+						if (idx !== -1) rootSemitones.push(idx);
+					}
+				}
 			}
 		}
 	}
